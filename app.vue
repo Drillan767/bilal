@@ -1,5 +1,7 @@
 <template>
-  <div>
-    <NuxtWelcome />
-  </div>
+    <VApp>
+        <VContainer>
+            <NuxtPage />
+        </VContainer>
+    </VApp>
 </template>
