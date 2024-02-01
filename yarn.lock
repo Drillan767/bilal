@@ -2072,6 +2072,11 @@
     hookable "^5.5.3"
     unhead "1.8.10"
 
+"@vee-validate/i18n@^4.12.5":
+  version "4.12.5"
+  resolved "https://registry.yarnpkg.com/@vee-validate/i18n/-/i18n-4.12.5.tgz#1ead23dc5b63f081219d851aa8d39636d0c1e425"
+  integrity sha512-cY3AHrtnM65fw70Hhdi3VdQdF8WyrrK5OfF3pWH8T3eDA/q1LxBJostFOlHSpglRkXyVVfQdpq8eW0UktlMpDA==
+
 "@vee-validate/nuxt@^4.12.5":
   version "4.12.5"
   resolved "https://registry.yarnpkg.com/@vee-validate/nuxt/-/nuxt-4.12.5.tgz#ee039bce20db718808600e49e71ed28169c4c8b4"
@@ -2079,6 +2084,13 @@
   dependencies:
     "@nuxt/kit" "^3.8.2"
     local-pkg "^0.5.0"
+    vee-validate "4.12.5"
+
+"@vee-validate/rules@^4.12.5":
+  version "4.12.5"
+  resolved "https://registry.yarnpkg.com/@vee-validate/rules/-/rules-4.12.5.tgz#0c51154958f090806e30c0082ce68ee33331038e"
+  integrity sha512-4+dBvPOqMbr2b+wBYeDOfLg6eIEdU2iubhgcu71JZTljh1PDB3hI0s4Qsoo3k8hvUQsyDOaVDgorfXPWZlub1A==
+  dependencies:
     vee-validate "4.12.5"
 
 "@vercel/nft@^0.24.3":
@@ -7018,6 +7030,11 @@ type-fest@^4.8.3:
   version "4.10.2"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.10.2.tgz#3abdb144d93c5750432aac0d73d3e85fcab45738"
   integrity sha512-anpAG63wSpdEbLwOqH8L84urkL6PiVIov3EMmgIhhThevh9aiMQov+6Btx0wldNcvm4wV+e2/Rt1QdDwKHFbHw==
+
+typescript@^5.3.3:
+  version "5.3.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.3.3.tgz#b3ce6ba258e72e6305ba66f5c9b452aaee3ffe37"
+  integrity sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==
 
 uc.micro@^2.0.0:
   version "2.0.0"
