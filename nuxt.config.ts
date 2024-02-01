@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     'dayjs-nuxt',
     '@vee-validate/nuxt',
   ],
-  
+
   app: {
     head: {
         htmlAttrs: {
@@ -17,5 +17,30 @@ export default defineNuxtConfig({
         },
         titleTemplate: '%s | Bilal',
     }
-  }
+  },
+  vuetify: {
+    vuetifyOptions: {
+        theme: {
+            defaultTheme: 'dark',
+        },
+        defaults: {
+            VTextField: {
+                variant: 'outlined',
+                color: 'primary',
+            },
+            VTextarea: {
+                variant: 'outlined',
+                color: 'primary',
+            },
+            VSelect: {
+                variant: 'outlined',
+                color: 'primary',
+            },
+            VFileInput: {
+                variant: 'outlined',
+                color: 'primary',
+            },
+        }
+    }
+  },
 })
