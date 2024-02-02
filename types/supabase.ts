@@ -13,23 +13,20 @@ export interface Database {
         Row: {
           created_at: string
           id: number
+          interval: number
           name: string
-          occurrence: number
-          order: number
         }
         Insert: {
           created_at?: string
           id?: number
+          interval: number
           name: string
-          occurrence: number
-          order: number
         }
         Update: {
           created_at?: string
           id?: number
+          interval?: number
           name?: string
-          occurrence?: number
-          order?: number
         }
         Relationships: []
       }
@@ -39,7 +36,7 @@ export interface Database {
           box_id: number | null
           created_at: string
           id: number
-          last_answered_at: string
+          last_answered_at: string | null
           media: string | null
           notes: string | null
           question: string
@@ -51,7 +48,7 @@ export interface Database {
           box_id?: number | null
           created_at?: string
           id?: number
-          last_answered_at: string
+          last_answered_at?: string | null
           media?: string | null
           notes?: string | null
           question: string
@@ -63,7 +60,7 @@ export interface Database {
           box_id?: number | null
           created_at?: string
           id?: number
-          last_answered_at?: string
+          last_answered_at?: string | null
           media?: string | null
           notes?: string | null
           question?: string

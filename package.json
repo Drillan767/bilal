@@ -15,7 +15,8 @@
         "@vee-validate/i18n": "^4.12.5",
         "@vee-validate/rules": "^4.12.5",
         "string-width": "7.1.0",
-        "vee-validate": "^4.12.5"
+        "vee-validate": "^4.12.5",
+        "vue3-toastify": "^0.2.1"
     },
     "devDependencies": {
         "@antfu/eslint-config": "^2.6.3",

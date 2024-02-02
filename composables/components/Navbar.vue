@@ -26,6 +26,7 @@ async function logout() {
                     <VListItem
                         prepend-icon="mdi-cogs"
                         title="Settings"
+                        to="/settings"
                     />
                     <VListItem
                         prepend-icon="mdi-logout"
