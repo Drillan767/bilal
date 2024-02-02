@@ -14,11 +14,12 @@
     "dependencies": {
         "@vee-validate/i18n": "^4.12.5",
         "@vee-validate/rules": "^4.12.5",
+        "string-width": "7.1.0",
         "vee-validate": "^4.12.5"
     },
     "devDependencies": {
         "@antfu/eslint-config": "^2.6.3",
-        "@nuxtjs/i18n": "^8.0.0",
+        "@nuxtjs/i18n": "^8.0.1",
         "@nuxtjs/supabase": "^1.1.6",
         "@vee-validate/nuxt": "^4.12.5",
         "@vueuse/nuxt": "^10.7.2",
@@ -30,8 +31,5 @@
         "vue": "^3.4.15",
         "vue-router": "^4.2.5",
         "vuetify-nuxt-module": "^0.10.3"
-    },
-    "resolutions": {
-        "string-width": "4.2.3"
     }
 }
