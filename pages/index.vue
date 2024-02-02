@@ -8,6 +8,18 @@ useHead({
     <VRow>
         <VCol>
             <VCard
+                variant="outlined"
+                to="/cards"
+            >
+                <template #text>
+                    Cards
+                </template>
+            </VCard>
+        </VCol>
+    </VRow>
+    <VRow>
+        <VCol>
+            <VCard
                 to="/decks"
                 title="Decks"
                 variant="outlined"
