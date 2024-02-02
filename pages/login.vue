@@ -5,12 +5,16 @@ import type { Database } from '~/types/supabase'
 const supabase = useSupabaseClient<Database>()
 
 interface LoginForm {
-  email: string;
-  password: string;
+    email: string
+    password: string
 }
 
 useHead({
     title: 'Login',
+})
+
+definePageMeta({
+    layout: false,
 })
 
 const { defineField, handleSubmit } = useForm<LoginForm>({
@@ -28,7 +32,7 @@ const loading = ref(false)
 const [email, emailProps] = defineField('email', vuetifyConfig)
 const [password, passwordProps] = defineField('password', vuetifyConfig)
 
-const submit = handleSubmit(async(form) => {
+const submit = handleSubmit(async (form) => {
     loading.value = true
 
     const { email, password } = form
