@@ -147,7 +147,7 @@ async function deleteBox(box: Box) {
     </VRow>
     <VRow>
         <VCol>
-            <h1 class="v-heading">
+            <h1>
                 Settings
             </h1>
         </VCol>
