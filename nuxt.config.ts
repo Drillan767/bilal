@@ -36,6 +36,10 @@ export default defineNuxtConfig({
                     variant: 'outlined',
                     color: 'primary',
                 },
+                VCombobox: {
+                    variant: 'outlined',
+                    color: 'primary',
+                },
                 VFileInput: {
                     variant: 'outlined',
                     color: 'primary',

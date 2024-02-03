@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useDropZone, useFileDialog } from '@vueuse/core'
+import { toTypedSchema } from '@vee-validate/yup'
+import * as yup from 'yup'
+import MCQField from './MCQField.vue'
 import type { Database } from '~/types/supabase'
 import type { CardForm } from '~/types/models'
 import { vuetifyConfig } from '~/composables/vuetifyConfig'
@@ -11,35 +15,62 @@ defineProps<Props>()
 
 const supabase = useSupabaseClient<Database>()
 
+const qType = ref<'classic' | 'media'>('classic')
+const aType = ref<'exact' | 'guess' | 'mcq'>('exact')
+
 const { defineField, setValues, handleSubmit, resetForm } = useForm<CardForm>({
-    validationSchema: {
-        question_type: 'required|oneOf:classic,media',
-        answer_type: 'required|oneOf:exact,guess,mcq',
-        answer: 'required',
-    },
+    validationSchema: computed(() => toTypedSchema(
+        yup.object({
+            question: qType.value === 'classic' ? yup.string().required() : yup.string().notRequired(),
+            tags: yup.array().of(
+                yup.object().shape({
+                    name: yup.string(),
+                }),
+            )
+                .min(1)
+                .required(),
+            answer: yup.string().required(),
+            note: yup.string().nullable(),
+            mcqAnswers: yup.array().of(
+                yup.object().shape({
+                    answer: yup.string(),
+                }),
+            )
+                .min(aType.value === 'mcq' ? 1 : 0)
+                .required(),
+        }),
+    )),
     initialValues: {
-        question_type: 'classic',
-        answer_type: 'exact',
+        tags: [],
+        mcq_answers: [],
     },
 })
 
-const mcqAnswers = ref<string[]>([])
+const dropzone = ref<HTMLDivElement>()
 const tagsList = ref<{ id: number, name: string }[]>([])
 const loading = ref(false)
 
-const [qType, qTypeProps] = defineField('question_type', vuetifyConfig)
-const [aType, aTypeProps] = defineField('answer_type', vuetifyConfig)
 const [question, questionProps] = defineField('question', vuetifyConfig)
 const [answer, answerProps] = defineField('answer', vuetifyConfig)
 const [tags, tagsProps] = defineField('tags', vuetifyConfig)
-const [media, mediaProps] = defineField('media', vuetifyConfig)
+const [media] = defineField('media', vuetifyConfig)
+const [mcqAnswers] = defineField('mcq_answers', vuetifyConfig)
 const [note, noteProps] = defineField('notes', vuetifyConfig)
+
+const { files, open, onChange } = useFileDialog({
+    accept: 'audio/*, image/*',
+    multiple: false,
+})
+
+useDropZone(dropzone, { onDrop: onFileDrop })
+
+onChange(files => console.log(files))
 
 const formValid = useIsFormValid()
 
 function addMcqAnswer() {
     if (mcqAnswers.value.length < 3)
-        mcqAnswers.value.push()
+        mcqAnswers.value.push('')
 }
 
 function removeMcqAnswer(i: number) {
@@ -56,6 +87,12 @@ async function fetchTags() {
     if (data)
         tagsList.value = data
 }
+
+function onFileDrop(files: File[] | null) {
+    console.log(files)
+}
+
+onMounted(() => fetchTags())
 </script>
 
 <template>
@@ -70,7 +107,6 @@ async function fetchTags() {
                 <VRow>
                     <VCol>
                         <VItemGroup
-                            v-bind="qTypeProps"
                             v-model="qType"
                             :mandatory="true"
                         >
@@ -113,7 +149,20 @@ async function fetchTags() {
                             </VCol>
                         </VRow>
                         <VRow v-if="qType === 'media'">
-                            <VCol>Media lo</VCol>
+                            <VCol>
+                                <div
+                                    ref="dropzone"
+                                    class="cursor-pointer"
+                                    @click="() => open()"
+                                >
+                                    <VIcon
+                                        icon="mdi-cloud-upload-outline"
+                                    />
+                                    <p>
+                                        Click to upload, or drop a file
+                                    </p>
+                                </div>
+                            </VCol>
                         </VRow>
                         <VRow>
                             <VCol>
@@ -130,7 +179,6 @@ async function fetchTags() {
                             </VCol>
                             <VCol cols="12">
                                 <VItemGroup
-                                    v-bind="aTypeProps"
                                     v-model="aType"
                                     :mandatory="true"
                                 >
@@ -179,13 +227,32 @@ async function fetchTags() {
                             </VCol>
                         </VRow>
                         <VRow v-if="aType === 'mcq'">
-                            <VTextField
-                                v-for="(a, i) in mcqAnswers"
-                                :key="i"
-                                v-model="mcqAnswers[i]"
-                                label="Answer"
-                            />
-                            <VBtn @click="addMcqAnswer" />
+                            <VCol>
+                                <MCQField
+                                    v-for="(_, i) in mcqAnswers"
+                                    :key="i"
+                                    v-model="mcqAnswers[i]"
+                                    @delete="removeMcqAnswer(i)"
+                                />
+                                <div class="text-right mt-2">
+                                    <VBtn
+                                        color="secondary"
+                                        variant="outlined"
+                                        @click="addMcqAnswer"
+                                    >
+                                        Add an answer
+                                    </VBtn>
+                                </div>
+                            </VCol>
+                        </VRow>
+                        <VRow>
+                            <VCol>
+                                <VTextField
+                                    v-bind="answerProps"
+                                    v-model="answer"
+                                    label="Correct answer"
+                                />
+                            </VCol>
                         </VRow>
                         <VRow>
                             <VCol>
@@ -214,6 +281,7 @@ async function fetchTags() {
             </VBtn>
             <VBtn
                 color="primary"
+                :disabled="!formValid"
             >
                 Save
             </VBtn>
