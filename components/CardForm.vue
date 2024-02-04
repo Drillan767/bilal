@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useDropZone, useFileDialog } from '@vueuse/core'
 import { toTypedSchema } from '@vee-validate/yup'
 import * as yup from 'yup'
 import MCQField from './MCQField.vue'
@@ -13,25 +12,38 @@ interface Props {
 
 defineProps<Props>()
 
+const context = new window.AudioContext()
+
 const supabase = useSupabaseClient<Database>()
 
 const qType = ref<'classic' | 'media'>('classic')
 const aType = ref<'exact' | 'guess' | 'mcq'>('exact')
 
-const { defineField, setValues, handleSubmit, resetForm } = useForm<CardForm>({
+const { defineField, handleSubmit, resetForm } = useForm<CardForm>({
     validationSchema: computed(() => toTypedSchema(
         yup.object({
             question: qType.value === 'classic' ? yup.string().required() : yup.string().notRequired(),
             tags: yup.array().of(
-                yup.object().shape({
-                    name: yup.string(),
-                }),
+                yup.string().required(),
             )
                 .min(1)
                 .required(),
             answer: yup.string().required(),
             note: yup.string().nullable(),
-            mcqAnswers: yup.array().of(
+            media: qType.value === 'media'
+                ? yup
+                    .mixed()
+                    .required()
+                    .test('respects-size', 'File too heavy', (value) => {
+                        const file = value as File[]
+                        return file && file[0] && file[0].size <= 102400
+                    })
+                    .test('respects-mime', 'Only audio and images are accepted', (value) => {
+                        const file = value as File[]
+                        return file && file[0] && (file[0].type.includes('audio') || file[0].type.includes('image'))
+                    })
+                : yup.string().nullable(),
+            mcq_answers: yup.array().of(
                 yup.object().shape({
                     answer: yup.string(),
                 }),
@@ -46,25 +58,19 @@ const { defineField, setValues, handleSubmit, resetForm } = useForm<CardForm>({
     },
 })
 
-const dropzone = ref<HTMLDivElement>()
 const tagsList = ref<{ id: number, name: string }[]>([])
 const loading = ref(false)
+const showPreview = ref(false)
+const imgPreview = ref('')
+const mediaType = ref<'audio' | 'image'>()
+const soundPreview = ref<AudioBufferSourceNode>(context.createBufferSource())
 
 const [question, questionProps] = defineField('question', vuetifyConfig)
 const [answer, answerProps] = defineField('answer', vuetifyConfig)
 const [tags, tagsProps] = defineField('tags', vuetifyConfig)
-const [media] = defineField('media', vuetifyConfig)
+const [media, mediaProps] = defineField('media', vuetifyConfig)
 const [mcqAnswers] = defineField('mcq_answers', vuetifyConfig)
 const [note, noteProps] = defineField('notes', vuetifyConfig)
-
-const { files, open, onChange } = useFileDialog({
-    accept: 'audio/*, image/*',
-    multiple: false,
-})
-
-useDropZone(dropzone, { onDrop: onFileDrop })
-
-onChange(files => console.log(files))
 
 const formValid = useIsFormValid()
 
@@ -88,9 +94,69 @@ async function fetchTags() {
         tagsList.value = data
 }
 
-function onFileDrop(files: File[] | null) {
-    console.log(files)
+function playSound() {
+    if (media.value && media.value[0] && mediaType.value === 'audio') {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            const arrayBuffer = e.target?.result as ArrayBuffer
+            context.decodeAudioData(arrayBuffer, (buffer) => {
+                const source = context.createBufferSource()
+                source.buffer = buffer
+                source.connect(context.destination)
+                source.start(0)
+            })
+        }
+
+        reader.readAsArrayBuffer(media.value[0])
+    }
+    // soundPreview.value.start(0)
+    soundPreview.value.playbackRate.value = 1
 }
+
+const submit = handleSubmit(async (form) => {
+    loading.value = true
+
+    const formData = new FormData()
+    formData.append('answer', form.answer)
+    formData.append('notes', form.notes)
+    formData.append('tags', JSON.stringify(form.tags))
+
+    if (qType.value === 'classic')
+        formData.append('question', form.question)
+
+    if (qType.value === 'media' && form.media)
+        formData.append('media', form.media[0])
+
+    if (aType.value === 'mcq')
+        formData.append('mcq_answers', JSON.stringify(form.mcq_answers))
+
+    await $fetch('/api/cards/create', {
+        method: 'POST',
+        body: formData,
+    })
+
+    loading.value = false
+    resetForm()
+})
+
+watch(aType, (value) => {
+    if (value === 'mcq' && mcqAnswers.value.length === 0)
+        mcqAnswers.value.push('')
+})
+
+watch(media, (value) => {
+    if (value && value[0]) {
+        const uploadedFile = value[0]
+
+        if (uploadedFile.type.includes('audio'))
+            mediaType.value = 'audio'
+
+        if (uploadedFile.type.includes('image')) {
+            mediaType.value = 'image'
+            imgPreview.value = URL.createObjectURL(uploadedFile)
+        }
+    }
+})
 
 onMounted(() => fetchTags())
 </script>
@@ -150,18 +216,30 @@ onMounted(() => fetchTags())
                         </VRow>
                         <VRow v-if="qType === 'media'">
                             <VCol>
-                                <div
-                                    ref="dropzone"
-                                    class="cursor-pointer"
-                                    @click="() => open()"
+                                <VFileInput
+                                    v-bind="mediaProps"
+                                    v-model="media"
+                                    label="Media (image or audio)"
                                 >
-                                    <VIcon
-                                        icon="mdi-cloud-upload-outline"
-                                    />
-                                    <p>
-                                        Click to upload, or drop a file
-                                    </p>
-                                </div>
+                                    <template
+                                        v-if="media"
+                                        #append
+                                    >
+                                        <VBtn
+                                            v-if="mediaType === 'audio'"
+                                            variant="text"
+                                            icon="mdi-volume-high"
+                                            @click="playSound"
+                                        />
+                                        <VBtn
+                                            v-if="mediaType === 'image'"
+                                            :icon="true"
+                                            @click="showPreview = true"
+                                        >
+                                            <VAvatar :image="imgPreview" />
+                                        </VBtn>
+                                    </template>
+                                </VFileInput>
                             </VCol>
                         </VRow>
                         <VRow>
@@ -236,8 +314,10 @@ onMounted(() => fetchTags())
                                 />
                                 <div class="text-right mt-2">
                                     <VBtn
+                                        v-if="mcqAnswers.length < 3"
                                         color="secondary"
                                         variant="outlined"
+                                        prepend-icon="mdi-plus"
                                         @click="addMcqAnswer"
                                     >
                                         Add an answer
@@ -273,6 +353,11 @@ onMounted(() => fetchTags())
                     </VCol>
                 </VRow>
             </VContainer>
+            <VDialog
+                v-model="showPreview"
+            >
+                <VImg :image="imgPreview" />
+            </VDialog>
         </template>
         <template #actions>
             <VSpacer />
@@ -282,9 +367,24 @@ onMounted(() => fetchTags())
             <VBtn
                 color="primary"
                 :disabled="!formValid"
+                @click="submit"
             >
                 Save
             </VBtn>
         </template>
     </VCard>
 </template>
+
+<style scoped>
+.dropzone {
+    border: solid 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 3px;
+    flex-direction: column;
+    padding: 10px 0;
+    text-align: center;
+    cursor: pointer;
+}
+</style>
