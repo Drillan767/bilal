@@ -2275,6 +2275,14 @@
     local-pkg "^0.5.0"
     vue-demi ">=0.14.6"
 
+"@vueuse/router@^10.7.2":
+  version "10.7.2"
+  resolved "https://registry.yarnpkg.com/@vueuse/router/-/router-10.7.2.tgz#74a5b5fb8e7c43386cf05b07e55a8ab339115f3f"
+  integrity sha512-TE9QtcqtZ793bwJWnlxn1gir7TXHJh5Y0KTIAS2DFOFvz4f3yTPmxAtIHC5e96oBVaVdnzxQQ9EsOhBDfBtCDg==
+  dependencies:
+    "@vueuse/shared" "10.7.2"
+    vue-demi ">=0.14.6"
+
 "@vueuse/shared@10.7.2":
   version "10.7.2"
   resolved "https://registry.yarnpkg.com/@vueuse/shared/-/shared-10.7.2.tgz#746441fbc08072371dd600a55883422c83fd0cab"
