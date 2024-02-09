@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import CreateDeckForm from '~/components/decks/CreateDeckForm.vue'
 import type { Database } from '~/types/supabase'
+import type { Deck } from '~/types/models'
 
-interface Deck {
-    name: string
+type DeckType = Deck & {
     cards: {
         id: number
     }[]
@@ -28,7 +28,7 @@ const items = [
 
 const loading = ref(false)
 const showCreateDeckDialog = ref(false)
-const decks = ref<Deck[]>([])
+const decks = ref<DeckType[]>([])
 
 function createDeck() {
     showCreateDeckDialog.value = true
@@ -39,7 +39,7 @@ async function fetchDecks() {
 
     const { data } = await supabase
         .from('decks')
-        .select('name, cards(id)')
+        .select('id, name, cards(id)')
 
     if (data)
         decks.value = data
@@ -80,6 +80,7 @@ onMounted(() => fetchDecks())
                 <VCol>
                     <VCard
                         :loading="loading"
+                        variant="tonal"
                     >
                         <template #text>
                             <VContainer>
@@ -90,11 +91,14 @@ onMounted(() => fetchDecks())
                                         cols="2"
                                     >
                                         <VCard
-                                            prepend-icon="mdi-cards"
                                             :title="deck.name"
+                                            :to="`/deck/${deck.id}`"
+                                            prepend-icon="mdi-cards"
                                             elevation="4"
                                         >
-                                            <p>Bjr</p>
+                                            <template #text>
+                                                Number of cards: {{ deck.cards.length }}
+                                            </template>
                                         </VCard>
                                     </VCol>
                                 </VRow>

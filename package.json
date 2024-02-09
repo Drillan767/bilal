@@ -25,6 +25,7 @@
         "@nuxtjs/supabase": "^1.1.6",
         "@vee-validate/nuxt": "^4.12.5",
         "@vueuse/nuxt": "^10.7.2",
+        "@vueuse/router": "^10.7.2",
         "dayjs-nuxt": "^2.1.9",
         "eslint": "^8.56.0",
         "nuxt": "^3.10.1",

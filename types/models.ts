@@ -42,6 +42,11 @@ export type DefaultAnswerCard = BaseCard & AnswerTypeBase & {
     answer_type: AnswerType.Guess | AnswerType.Exact
 }
 
+export interface Deck {
+    id: string
+    name: string
+}
+
 export interface CardForm {
     deck_id: string
     question_type: 'classic' | 'media'
