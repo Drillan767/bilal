@@ -3,14 +3,8 @@ import type { Database } from '~/types/supabase'
 import type { CardForm } from '~/types/models'
 import { serverSupabaseClient } from '#supabase/server'
 
-<<<<<<< Updated upstream
-type Form = Omit<CardForm, 'tags' | 'mcq_answers'> & {
-    tags: string
-    mcq_answers: string
-=======
 type Form = Omit<CardForm, 'tags'> & {
     tags: string
->>>>>>> Stashed changes
 }
 
 export default defineEventHandler(async (event) => {
@@ -42,11 +36,7 @@ export default defineEventHandler(async (event) => {
     if (!box)
         throw createError({ statusCode: 400, message: 'A box is required to store cards.' })
 
-<<<<<<< Updated upstream
-    const { question, question_type, answer_type, answer, notes, mcq_answers, tags } = payload
-=======
     const { question, question_type, answer, notes, tags } = payload
->>>>>>> Stashed changes
 
     const formTags: string[] = JSON.parse(tags)
 
@@ -60,15 +50,9 @@ export default defineEventHandler(async (event) => {
     const { data: card } = await supabase
         .from('cards')
         .insert({
-<<<<<<< Updated upstream
-            box_id: box.id,
-            question_type,
-            answer_type,
-=======
             deck_id: payload.deck_id,
             box_id: box.id,
             question_type,
->>>>>>> Stashed changes
             answer,
             question,
             notes,
@@ -106,16 +90,6 @@ export default defineEventHandler(async (event) => {
         return true
     })
 
-<<<<<<< Updated upstream
-    /* const newTags = formTags
-        .filter(t => (storedTags || [])
-        .map(t => t.name)
-        .includes(t)) */
-
-    console.log(newTags)
-
-=======
->>>>>>> Stashed changes
     if (newTags.length) {
         const { data: tId } = await supabase
             .from('tags')

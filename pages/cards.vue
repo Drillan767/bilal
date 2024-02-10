@@ -5,10 +5,6 @@ useHead({
 
 const edit = ref(false)
 const drawer = ref(false)
-<<<<<<< Updated upstream
-const editDrawer = ref(false)
-=======
->>>>>>> Stashed changes
 
 const items = [
     {
