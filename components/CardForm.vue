@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { toTypedSchema } from '@vee-validate/yup'
 import * as yup from 'yup'
-<<<<<<< Updated upstream
-import MCQField from './MCQField.vue'
-=======
->>>>>>> Stashed changes
 import type { Database } from '~/types/supabase'
 import type { CardForm } from '~/types/models'
 import { vuetifyConfig } from '~/composables/vuetifyConfig'
@@ -37,13 +33,11 @@ const { defineField, handleSubmit, resetForm } = useForm<CardForm>({
                 ? yup
                     .mixed()
                     .required()
-                    .test('respects-size', 'File too heavy', (value) => {
-                        const file = value as File[]
-                        return file && file[0] && file[0].size <= 102400
+                    .test('respects-size', 'File too heavy', (value: File[]) => {
+                        return value && value[0] && value[0].size <= 102400
                     })
-                    .test('respects-mime', 'Only audio and images are accepted', (value) => {
-                        const file = value as File[]
-                        return file && file[0] && (file[0].type.includes('audio') || file[0].type.includes('image'))
+                    .test('respects-mime', 'Only audio and images are accepted', (value: File[]) => {
+                        return value && value[0] && (value[0].type.includes('audio') || value[0].type.includes('image'))
                     })
                 : yup.string().nullable(),
             mcq_answers: yup.array().of(
@@ -57,10 +51,6 @@ const { defineField, handleSubmit, resetForm } = useForm<CardForm>({
     )),
     initialValues: {
         tags: [],
-<<<<<<< Updated upstream
-        mcq_answers: [],
-=======
->>>>>>> Stashed changes
     },
 })
 
@@ -75,26 +65,10 @@ const [question, questionProps] = defineField('question', vuetifyConfig)
 const [answer, answerProps] = defineField('answer', vuetifyConfig)
 const [tags, tagsProps] = defineField('tags', vuetifyConfig)
 const [media, mediaProps] = defineField('media', vuetifyConfig)
-<<<<<<< Updated upstream
-const [mcqAnswers] = defineField('mcq_answers', vuetifyConfig)
-=======
->>>>>>> Stashed changes
 const [note, noteProps] = defineField('notes', vuetifyConfig)
 
 const formValid = useIsFormValid()
 
-<<<<<<< Updated upstream
-function addMcqAnswer() {
-    if (mcqAnswers.value.length < 3)
-        mcqAnswers.value.push('')
-}
-
-function removeMcqAnswer(i: number) {
-    mcqAnswers.value.slice(i, 1)
-}
-
-=======
->>>>>>> Stashed changes
 async function fetchTags() {
     loading.value = true
 
@@ -139,12 +113,6 @@ const submit = handleSubmit(async (form) => {
     if (qType.value === 'media' && form.media)
         formData.append('media', form.media[0])
 
-<<<<<<< Updated upstream
-    if (aType.value === 'mcq')
-        formData.append('mcq_answers', JSON.stringify(form.mcq_answers))
-
-=======
->>>>>>> Stashed changes
     await $fetch('/api/cards/create', {
         method: 'POST',
         body: formData,
@@ -154,14 +122,6 @@ const submit = handleSubmit(async (form) => {
     resetForm()
 })
 
-<<<<<<< Updated upstream
-watch(aType, (value) => {
-    if (value === 'mcq' && mcqAnswers.value.length === 0)
-        mcqAnswers.value.push('')
-})
-
-=======
->>>>>>> Stashed changes
 watch(media, (value) => {
     if (value && value[0]) {
         const uploadedFile = value[0]
@@ -322,30 +282,6 @@ onMounted(() => fetchTags())
                                 </VItemGroup>
                             </VCol>
                         </VRow>
-<<<<<<< Updated upstream
-                        <VRow v-if="aType === 'mcq'">
-                            <VCol>
-                                <MCQField
-                                    v-for="(_, i) in mcqAnswers"
-                                    :key="i"
-                                    v-model="mcqAnswers[i]"
-                                    @delete="removeMcqAnswer(i)"
-                                />
-                                <div class="text-right mt-2">
-                                    <VBtn
-                                        v-if="mcqAnswers.length < 3"
-                                        color="secondary"
-                                        variant="outlined"
-                                        prepend-icon="mdi-plus"
-                                        @click="addMcqAnswer"
-                                    >
-                                        Add an answer
-                                    </VBtn>
-                                </div>
-                            </VCol>
-                        </VRow>
-=======
->>>>>>> Stashed changes
                         <VRow>
                             <VCol>
                                 <VTextField
