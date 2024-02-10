@@ -84,7 +84,7 @@ onMounted(() => fetchDecks())
                     >
                         <template #text>
                             <VContainer>
-                                <VRow>
+                                <VRow v-if="decks.length > 0">
                                     <VCol
                                         v-for="(deck, i) in decks"
                                         :key="i"
@@ -100,6 +100,24 @@ onMounted(() => fetchDecks())
                                                 Number of cards: {{ deck.cards.length }}
                                             </template>
                                         </VCard>
+                                    </VCol>
+                                </VRow>
+                                <VRow v-else>
+                                    <VCol class="text-center">
+                                        <VIcon
+                                            icon="mdi-information"
+                                            size="64px"
+                                        />
+                                        <p class="my-2">
+                                            Nothing to display, yet.
+                                        </p>
+                                        <VBtn
+                                            color="primary"
+                                            prepend-icon="mdi-plus"
+                                            @click="createDeck"
+                                        >
+                                            Create a deck
+                                        </VBtn>
                                     </VCol>
                                 </VRow>
                             </VContainer>
