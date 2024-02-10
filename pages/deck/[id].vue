@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useRouteParams } from '@vueuse/router'
-import { toast } from 'vue3-toastify'
 import type { Database } from '~/types/supabase'
-import type { ClassicCard, Deck } from '~/types/models'
+import type { Deck } from '~/types/models'
+import useNotification from '~/composables/notifications'
 
 const router = useRouter()
 const supabase = useSupabaseClient<Database>()
+const { displayError, displaySuccess } = useNotification()
 
 const deckId = useRouteParams('id', null, { transform: String })
 
@@ -32,6 +33,10 @@ const items = computed(() => ([
         to: '/',
     },
     {
+        title: 'Decks',
+        to: '/decks',
+    },
+    {
         title: deck.value.name,
         disabled: true,
     },
@@ -43,20 +48,19 @@ async function fetchDeck() {
     const { data, error } = await supabase
         .from('decks')
         .select(`
-            id, 
-            name, 
-            cards(id, media, question, answer)    
+            id,
+            name
         `)
         .eq('id', deckId.value)
         .single()
 
-    if (error) {
-        toast.error('Deck not found')
-        router.push('/decks')
-    }
-
     if (data)
         deck.value = data
+
+    if (error) {
+        router.push('/decks')
+            .then(() => displayError('Could not find the deck'))
+    }
 }
 
 function editDeck() {
@@ -78,7 +82,8 @@ const updateDeck = handleSubmit(async (form) => {
         .update({ name: form.name })
         .eq('id', deckId.value)
 
-    toast.success('Deck updated successfully')
+    displaySuccess('Deck updated successfully')
+
     showEditDeckDialog.value = false
     resetForm()
     fetchDeck()
@@ -94,6 +99,7 @@ async function deleteDeck() {
 
     showDeleteDeckDialog.value = false
     router.push('/decks')
+        .then(() => displaySuccess('Deck deleted successfully'))
 }
 
 onMounted(() => fetchDeck())
@@ -200,6 +206,7 @@ watch(showEditDeckDialog, (value) => {
     >
         <VCard
             prepend-icon="mdi-alert"
+            title="Delete the deck?"
             text="Deleting the deck will also delete all related cards and tags. This action cannot be undone. Confirm?"
         >
             <template #actions>
