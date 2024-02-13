@@ -8,9 +8,10 @@ import { vuetifyConfig } from '~/composables/vuetifyConfig'
 
 interface Props {
     edit: boolean
+    deckId: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const valueData = defineModel<boolean>()
 
@@ -18,15 +19,26 @@ const supabase = useSupabaseClient<Database>()
 
 const qType = ref<'classic' | 'media'>('classic')
 
-const { defineField, handleSubmit, resetForm } = useForm<CardForm>({
+const { defineField, handleSubmit, resetForm, errors } = useForm<CardForm>({
     validationSchema: computed(() => toTypedSchema(
         yup.object({
-            question: qType.value === 'classic' ? yup.string().required() : yup.string().notRequired(),
+            question: qType.value === 'classic'
+                ? yup.mixed()
+                    .required()
+                    .test('not-empty', 'The field is required', (value) => {
+                        return value && value !== '<p></p>'
+                    })
+                : yup.string().notRequired(),
             tags: yup.array().of(
                 yup.string().required(),
             )
                 .nullable(),
-            answer: yup.string().required(),
+            answer: yup
+                .mixed()
+                .required()
+                .test('not-empty', 'The field is required', (value) => {
+                    return value && value !== '<p></p>'
+                }),
             note: yup.string().nullable(),
             media: qType.value === 'media'
                 ? yup
@@ -54,11 +66,11 @@ const showPreview = ref(false)
 const imgPreview = ref('')
 const mediaType = ref<'audio' | 'image'>()
 
-const [question, questionProps] = defineField('question')
-const [answer, answerProps] = defineField('answer')
+const [question] = defineField('question')
+const [answer] = defineField('answer')
 const [tags, tagsProps] = defineField('tags', vuetifyConfig)
 const [media, mediaProps] = defineField('media', vuetifyConfig)
-const [note, noteProps] = defineField('notes')
+const [note] = defineField('notes')
 
 const formValid = useIsFormValid()
 
@@ -96,6 +108,7 @@ const submit = handleSubmit(async (form) => {
     loading.value = true
 
     const formData = new FormData()
+    formData.append('deck_id', props.deckId)
     formData.append('answer', form.answer)
     formData.append('notes', form.notes)
     formData.append('tags', JSON.stringify(form.tags))
@@ -183,11 +196,12 @@ onMounted(() => fetchTags())
                             </VItemGroup>
                             <VRow v-if="qType === 'classic'">
                                 <VCol>
-                                    <!-- <VTextField
-                                        v-bind="questionProps"
+                                    <Wysiwyg
                                         v-model="question"
                                         label="Question"
-                                    /> -->
+                                        placeholder="Test bjr"
+                                        :error="errors.answer"
+                                    />
                                 </VCol>
                             </VRow>
                             <VRow v-if="qType === 'media'">
@@ -221,28 +235,18 @@ onMounted(() => fetchTags())
                             <VRow>
                                 <VCol>
                                     <Wysiwyg
-                                        v-bind="questionProps"
-                                        v-model="question"
-                                        label="Notes"
-                                        placeholder="Test bjr"
-                                    />
-                                </VCol>
-                            </VRow>
-                            <VRow>
-                                <VCol>
-                                    <VTextarea
-                                        v-bind="noteProps"
                                         v-model="note"
-                                        label="Additional notes"
+                                        label="Notes"
+                                        :error="errors.notes"
                                     />
                                 </VCol>
                             </VRow>
                             <VRow>
                                 <VCol>
-                                    <VTextField
-                                        v-bind="answerProps"
+                                    <Wysiwyg
                                         v-model="answer"
-                                        label="Correct answer"
+                                        label="Answer"
+                                        :error="errors.answer"
                                     />
                                 </VCol>
                             </VRow>
