@@ -3,6 +3,7 @@ import { useRouteParams } from '@vueuse/router'
 import type { Database } from '~/types/supabase'
 import type { Deck } from '~/types/models'
 import useNotification from '~/composables/notifications'
+import CardForm from '~/components/cards/CardForm.vue'
 
 const router = useRouter()
 const supabase = useSupabaseClient<Database>()
@@ -14,6 +15,7 @@ const deck = ref<Deck>({} as Deck)
 const loading = ref(false)
 const showEditDeckDialog = ref(false)
 const showDeleteDeckDialog = ref(false)
+const showCreateCardDialog = ref(false)
 
 const { defineField, handleSubmit, resetForm, setValues } = useForm<{ name: string }>({
     validationSchema: {
@@ -102,6 +104,11 @@ async function deleteDeck() {
         .then(() => displaySuccess('Deck deleted successfully'))
 }
 
+function createCard() {
+    showCreateCardDialog.value = true
+}
+
+
 onMounted(() => fetchDeck())
 
 watch(showEditDeckDialog, (value) => {
@@ -133,6 +140,7 @@ watch(showEditDeckDialog, (value) => {
                     >
                         <VBtn
                             prepend-icon="mdi-plus"
+                            @click="createCard"
                         >
                             Add a card
                         </VBtn>
@@ -223,4 +231,9 @@ watch(showEditDeckDialog, (value) => {
             </template>
         </VCard>
     </VDialog>
+
+    <CardForm
+        v-model="showCreateCardDialog"
+        :edit="false"
+    />
 </template>

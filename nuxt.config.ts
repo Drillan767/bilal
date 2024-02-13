@@ -4,7 +4,6 @@ export default defineNuxtConfig({
     modules: [
         '@vueuse/nuxt',
         'vuetify-nuxt-module',
-        'nuxt-tiptap-editor',
         '@nuxtjs/supabase',
         'dayjs-nuxt',
         '@vee-validate/nuxt',

@@ -12,6 +12,10 @@
         "lint:fix": "eslint . --fix"
     },
     "dependencies": {
+        "@tiptap/extension-placeholder": "^2.2.2",
+        "@tiptap/pm": "^2.2.2",
+        "@tiptap/starter-kit": "^2.2.2",
+        "@tiptap/vue-3": "^2.2.2",
         "@vee-validate/i18n": "^4.12.5",
         "@vee-validate/rules": "^4.12.5",
         "@vee-validate/yup": "^4.12.5",
@@ -31,7 +35,6 @@
         "dayjs-nuxt": "^2.1.9",
         "eslint": "^8.56.0",
         "nuxt": "^3.10.1",
-        "nuxt-tiptap-editor": "^1.1.0",
         "typescript": "^5.3.3",
         "vue": "^3.4.15",
         "vue-router": "^4.2.5",
