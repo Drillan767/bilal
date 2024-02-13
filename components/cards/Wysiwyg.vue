@@ -7,6 +7,7 @@ interface Props {
     modelValue: any
     label: string
     placeholder?: string
+    error?: string
 }
 
 const props = defineProps<Props>()
@@ -15,32 +16,17 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void
 }>()
 
-const value = toRef(props, 'modelValue')
-
-const {
-    errorMessage,
-    handleBlur,
-    handleChange,
-    validate,
-    meta,
-} = useField(value, undefined, {
-    initialValue: props.modelValue,
-})
-
 const editor = useEditor({
-    content: '<p></p>',
+    content: null,
     extensions: [
         StarterKit,
         Placeholder.configure({
-            placeholder: props.label ?? '',
+            placeholder: props.placeholder ?? '',
         }),
     ],
-    onUpdate: (e) => {
+    onUpdate: () => {
         emit('update:modelValue', editor.value?.getHTML() ?? '')
-        handleChange(e, true)
     },
-    onBlur: () => handleBlur,
-
 })
 
 onMounted(() => editor.value?.commands.setContent(props.modelValue))
@@ -58,74 +44,119 @@ onMounted(() => editor.value?.commands.setContent(props.modelValue))
             <template #extension>
                 <VBtn
                     :disabled="!editor.can().chain().focus().toggleBold().run()"
-                    :variant="editor.isActive('bold') ? 'tonal' : 'outlined'"
+                    :variant="editor.isActive('bold') ? 'tonal' : 'text'"
                     icon="mdi-format-bold"
-                    size="x-small"
                     class="mx-2"
                     @click="editor.chain().focus().toggleBold().run()"
                 />
                 <VBtn
                     :disabled="!editor.can().chain().focus().toggleItalic().run()"
-                    :variant="editor.isActive('italic') ? 'tonal' : 'outlined'"
+                    :variant="editor.isActive('italic') ? 'tonal' : 'text'"
                     icon="mdi-format-italic"
-                    size="x-small"
                     class="mr-2"
                     @click="editor.chain().focus().toggleItalic().run()"
                 />
                 <VBtn
-                    :variant="editor.isActive('bulletList') ? 'tonal' : 'outlined'"
+                    :variant="editor.isActive('bulletList') ? 'tonal' : 'text'"
                     icon="mdi-format-list-bulleted"
-                    size="x-small"
                     class="mr-2"
                     @click="editor.chain().focus().toggleBulletList().run()"
                 />
                 <VBtn
-                    :variant="editor.isActive('orderedList') ? 'tonal' : 'outlined'"
+                    :variant="editor.isActive('orderedList') ? 'tonal' : 'text'"
                     icon="mdi-format-list-numbered"
-                    size="x-small"
                     class="mr-2"
                     @click="editor.chain().focus().toggleOrderedList().run()"
                 />
 
                 <VBtn
-                    :variant="editor.isActive('code') ? 'tonal' : 'outlined'"
+                    :variant="editor.isActive('code') ? 'tonal' : 'text'"
                     icon="mdi-code-tags"
-                    size="x-small"
                     class="mr-2"
                     @click="editor.chain().focus().toggleCode().run()"
                 />
 
                 <VBtn
-                    :variant="editor.isActive('codeBlock') ? 'tonal' : 'outlined'"
+                    :variant="editor.isActive('codeBlock') ? 'tonal' : 'text'"
                     icon="mdi-code-braces-box"
-                    size="x-small"
                     class="mr-2"
                     @click="editor.chain().focus().toggleCodeBlock().run()"
                 />
 
                 <VBtn
-                    variant="outlined"
+                    variant="text"
                     icon="mdi-undo"
-                    size="x-small"
                     class="mr-2"
                     @click="editor.chain().focus().undo().run()"
                 />
 
                 <VBtn
-                    variant="outlined"
+                    variant="text"
                     icon="mdi-redo"
-                    size="x-small"
                     @click="editor.chain().focus().redo().run()"
                 />
             </template>
         </VToolbar>
         <VCardText>
             <EditorContent
+                class="editor-content"
                 :editor="editor"
             />
-            <p v-show="errorMessage || meta.valid" class="help-message">
-                {{ errorMessage }}
+            <p v-show="error" class="text-red mt-4">
+                {{ error }}
             </p>
         </VCardText>
     </VCard>
 </template>
+
+<style scoped lang="scss">
+    :deep(.ProseMirror) {
+        min-height: 100px;
+        max-height: 100px;
+        overflow-y: scroll;
+
+        ul,
+        ol {
+            padding: 0 1rem;
+        }
+
+        code {
+            background-color: rgba(#616161, 0.1);
+            color: #616161;
+        }
+
+        pre {
+            background: #0D0D0D;
+            color: #FFF;
+            font-family: 'JetBrainsMono', monospace;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+
+            code {
+            color: inherit;
+            padding: 0;
+            background: none;
+            font-size: 0.8rem;
+            }
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+    }
+/*     :deep(.ProseMirror):focus {
+        outline: none;
+    }
+
+    :deep(.ProseMirror) ul,
+  ol {
+    padding: 0 1rem;
+  }
+
+    :deep(.ProseMirror) {
+        min-height: 100px;
+        max-height: 100px;
+        overflow-y: scroll;
+    } */
+</style>

@@ -108,7 +108,6 @@ function createCard() {
     showCreateCardDialog.value = true
 }
 
-
 onMounted(() => fetchDeck())
 
 watch(showEditDeckDialog, (value) => {
@@ -234,6 +233,7 @@ watch(showEditDeckDialog, (value) => {
 
     <CardForm
         v-model="showCreateCardDialog"
+        :deck-id="deckId"
         :edit="false"
     />
 </template>
