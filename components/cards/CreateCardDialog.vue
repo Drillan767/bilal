@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import CardForm from './CardForm.vue'
 import type { CardForm as FormType } from '~/types/models'
+import useNotifications from '~/composables/notifications'
 
 interface Props {
     deckId: string
 }
 
 const props = defineProps<Props>()
+
+const emit = defineEmits<{
+    (e: 'success'): void
+}>()
 
 const initialValues: FormType = {
     deck_id: props.deckId,
@@ -19,6 +24,7 @@ const initialValues: FormType = {
 }
 
 const valueData = defineModel<boolean>()
+const { displaySuccess } = useNotifications()
 
 const loading = ref(false)
 const form = ref<FormType>(initialValues)
@@ -32,6 +38,7 @@ async function submit() {
     formData.append('answer', form.value.answer)
     formData.append('notes', form.value.notes)
     formData.append('tags', JSON.stringify(form.value.tags))
+    formData.append('question_type', form.value.question_type)
 
     if (form.value.question_type === 'classic')
         formData.append('question', form.value.question)
@@ -39,12 +46,15 @@ async function submit() {
     if (form.value.question_type === 'media' && form.value.media)
         formData.append('media', form.value.media[0])
 
-    await $fetch('/api/cards/create', {
+    await useFetch('/api/cards/create', {
         method: 'POST',
         body: formData,
     })
 
     loading.value = false
+    emit('success')
+    valueData.value = false
+    displaySuccess('Card created successfully')
 }
 
 function resetForm() {
@@ -66,19 +76,33 @@ watch(valueData, () => resetForm())
                 <CardForm
                     v-model:form="form"
                     v-model:formValid="formValid"
+                    :loading="loading"
                 />
             </template>
             <template #actions>
                 <VSpacer />
-                <VBtn @click="valueData = false">
+                <VBtn
+                    :disabled="loading"
+                    @click="valueData = false"
+                >
                     Cancel
                 </VBtn>
                 <VBtn
+                    :disabled="!formValid || loading"
+                    :loading="loading"
                     color="primary"
                     prepend-icon="mdi-content-save"
                     @click="submit"
                 >
                     Save
+                </VBtn>
+                <VBtn
+                    :disabled="!formValid || loading"
+                    :loading="loading"
+                    color="primary"
+                    prepend-icon="mdi-content-save-plus"
+                >
+                    Save and add
                 </VBtn>
             </template>
         </VCard>
