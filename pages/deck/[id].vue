@@ -234,7 +234,6 @@ watch(showEditDeckDialog, (value) => {
         v-model="showCreateCardDialog"
         :deck-id="deckId"
         @success="fetchDeck"
-        @close="showCreateCardDialog = false"
     />
 
     <!-- <CardForm

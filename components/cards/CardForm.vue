@@ -30,6 +30,7 @@ const formProxy = computed({
 const { defineField, controlledValues, errors } = useForm<CardForm>({
     validationSchema: computed(() => toTypedSchema(
         yup.object({
+            question_type: yup.string().required(),
             question: qType.value === 'classic'
                 ? yup.mixed()
                     .required()
@@ -77,6 +78,7 @@ const [answer] = defineField('answer')
 const [tags, tagsProps] = defineField('tags', vuetifyConfig)
 const [media, mediaProps] = defineField('media', vuetifyConfig)
 const [note] = defineField('notes')
+defineField('question_type')
 
 const formValid = useIsFormValid()
 
@@ -126,11 +128,10 @@ watch(media, (value) => {
 
 watch(formValid, value => emit('update:formValid', value))
 
-watch(qType, (value) => {
-    controlledValues.value.question_type = value
-})
-
-watch(controlledValues, value => emit('update:form', value))
+watch([controlledValues, qType], ([values, type]) => emit('update:form', {
+    ...values,
+    question_type: type,
+}))
 
 onMounted(() => fetchTags())
 </script>
@@ -178,7 +179,7 @@ onMounted(() => fetchTags())
                             v-model="question"
                             label="Question"
                             placeholder="Test bjr"
-                            :error="errors.answer"
+                            :error="errors.question"
                         />
                     </VCol>
                 </VRow>
@@ -234,7 +235,8 @@ onMounted(() => fetchTags())
                             v-bind="tagsProps"
                             v-model="tags"
                             :chips="true"
-                            item-value=""
+                            item-title="name"
+                            item-value="name"
                             :return-object="false"
                             :multiple="true"
                             :closable-chips="true"

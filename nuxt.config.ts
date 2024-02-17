@@ -17,6 +17,9 @@ export default defineNuxtConfig({
             titleTemplate: '%s | Bilal',
         },
     },
+    css: [
+        '@mdi/font/css/materialdesignicons.min.css',
+    ],
     vuetify: {
         vuetifyOptions: {
             theme: {

@@ -16,13 +16,33 @@ export default defineEventHandler(async (event) => {
     const supabase = await serverSupabaseClient<Database>(event)
 
     const payload: Form = {} as Form
+    let deckId = ''
 
     for (const field of body) {
         const fieldName = field.name!.toString()
-
-        if (fieldName !== 'media')
-            payload[fieldName] = field.data.toString()
+        switch(fieldName) {
+            case 'answer':
+            case 'notes':
+            case 'tags':
+                payload[fieldName] = field.data.toString()
+                break
+            case 'question_type':
+                console.log('question_type')
+                payload.question_type = field.data.toString() as Form['question_type']
+                break
+            case 'question':
+                console.log('question')
+                payload.question = field.data?.toString() ?? null
+                break
+            case 'deck_id':
+                console.log('deck_id')
+                deckId = field.data.toString()
+                break
+        }
     }
+
+    if (deckId.length === 0)
+        throw createError({ statusCode: 400, message: 'Deck Id could not be retrieved' })
 
     const mediaData = body.find(field => field.name === 'media')
 
@@ -47,10 +67,10 @@ export default defineEventHandler(async (event) => {
         .in('name', JSON.parse(tags))
 
     // Store card.
-    const { data: card } = await supabase
+    const { data: card, error } = await supabase
         .from('cards')
         .insert({
-            deck_id: payload.deck_id,
+            deck_id: deckId,
             box_id: box.id,
             question_type,
             answer,
@@ -62,7 +82,7 @@ export default defineEventHandler(async (event) => {
         .select('id')
 
     if (!card)
-        throw createError({ statusCode: 400, message: 'Error while creating card' })
+        throw createError({ statusCode: 400, message: error.message })
 
     // Handle media upload.
     if (mediaData && question_type === 'media') {
@@ -91,13 +111,13 @@ export default defineEventHandler(async (event) => {
     })
 
     if (newTags.length) {
-        const { data: tId } = await supabase
+        const { data: tId, error } = await supabase
             .from('tags')
-            .insert(newTags.map(t => ({ name: t })))
+            .insert(newTags.map(t => ({ name: t, deck_id: deckId })))
             .select('id')
 
         if (!tId)
-            throw createError({ statusCode: 400, message: 'Error while creating tags' })
+            throw createError({ statusCode: 400, message: error.message })
 
         await supabase
             .from('cards_tags')
