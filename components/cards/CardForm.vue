@@ -246,19 +246,8 @@ onMounted(() => fetchTags())
                 </VRow>
             </VCol>
         </VRow>
+        <VDialog v-model="showPreview">
+            <VImg :src="imgPreview" />
+        </VDialog>
     </VContainer>
 </template>
-
-<style scoped>
-.dropzone {
-    border: solid 2px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 3px;
-    flex-direction: column;
-    padding: 10px 0;
-    text-align: center;
-    cursor: pointer;
-}
-</style>
