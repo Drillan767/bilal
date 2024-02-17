@@ -7,19 +7,27 @@ import type { CardForm } from '~/types/models'
 import { vuetifyConfig } from '~/composables/vuetifyConfig'
 
 interface Props {
-    edit: boolean
-    deckId: string
+    form: CardForm
+    formValid: boolean
 }
 
 const props = defineProps<Props>()
 
-const valueData = defineModel<boolean>()
+const emit = defineEmits<{
+    (e: 'update:form', value: CardForm): void
+    (e: 'update:formValid', value: boolean): void
+}>()
 
 const supabase = useSupabaseClient<Database>()
 
 const qType = ref<'classic' | 'media'>('classic')
 
-const { defineField, handleSubmit, resetForm, errors } = useForm<CardForm>({
+const formProxy = computed({
+    get: () => props.form,
+    set: value => emit('update:form', value),
+})
+
+const { defineField, controlledValues, errors } = useForm<CardForm>({
     validationSchema: computed(() => toTypedSchema(
         yup.object({
             question: qType.value === 'classic'
@@ -55,9 +63,7 @@ const { defineField, handleSubmit, resetForm, errors } = useForm<CardForm>({
                 : yup.string().nullable(),
         }),
     )),
-    initialValues: {
-        tags: [],
-    },
+    initialValues: formProxy.value,
 })
 
 const tagsList = ref<{ id: number, name: string }[]>([])
@@ -104,30 +110,6 @@ function playSound() {
     reader.readAsArrayBuffer(media.value[0])
 }
 
-const submit = handleSubmit(async (form) => {
-    loading.value = true
-
-    const formData = new FormData()
-    formData.append('deck_id', props.deckId)
-    formData.append('answer', form.answer)
-    formData.append('notes', form.notes)
-    formData.append('tags', JSON.stringify(form.tags))
-
-    if (qType.value === 'classic')
-        formData.append('question', form.question)
-
-    if (qType.value === 'media' && form.media)
-        formData.append('media', form.media[0])
-
-    await $fetch('/api/cards/create', {
-        method: 'POST',
-        body: formData,
-    })
-
-    loading.value = false
-    resetForm()
-})
-
 watch(media, (value) => {
     if (value && value[0]) {
         const uploadedFile = value[0]
@@ -142,156 +124,129 @@ watch(media, (value) => {
     }
 })
 
+watch(formValid, value => emit('update:formValid', value))
+
+watch(qType, (value) => {
+    controlledValues.value.question_type = value
+})
+
+watch(controlledValues, value => emit('update:form', value))
+
 onMounted(() => fetchTags())
 </script>
 
 <template>
-    <VDialog
-        v-model="valueData"
-        :persistent="true"
-        width="600"
-    >
-        <VCard
-            prepend-icon="mdi-cards"
-        >
-            <template #title>
-                <h3>{{ edit ? 'Edit' : 'Create' }} a card</h3>
-            </template>
-            <template #text>
-                <VContainer>
+    <VContainer>
+        <VRow>
+            <VCol>
+                <VItemGroup
+                    v-model="qType"
+                    :mandatory="true"
+                >
                     <VRow>
                         <VCol>
-                            <VItemGroup
-                                v-model="qType"
-                                :mandatory="true"
+                            <VItem
+                                v-slot="{ toggle }"
+                                value="classic"
                             >
-                                <VRow>
-                                    <VCol>
-                                        <VItem
-                                            v-slot="{ toggle }"
-                                            value="classic"
-                                        >
-                                            <VCard
-                                                :variant="qType === 'classic' ? 'tonal' : 'outlined'"
-                                                prepend-icon="mdi-text-box"
-                                                title="Classic"
-                                                @click="toggle"
-                                            />
-                                        </VItem>
-                                    </VCol>
-                                    <VCol>
-                                        <VItem
-                                            v-slot="{ toggle }"
-                                            value="media"
-                                        >
-                                            <VCard
-                                                :variant="qType === 'media' ? 'tonal' : 'outlined'"
-                                                prepend-icon="mdi-music-box-outline"
-                                                title="Media"
-                                                @click="toggle"
-                                            />
-                                        </VItem>
-                                    </VCol>
-                                </VRow>
-                            </VItemGroup>
-                            <VRow v-if="qType === 'classic'">
-                                <VCol>
-                                    <Wysiwyg
-                                        v-model="question"
-                                        label="Question"
-                                        placeholder="Test bjr"
-                                        :error="errors.answer"
-                                    />
-                                </VCol>
-                            </VRow>
-                            <VRow v-if="qType === 'media'">
-                                <VCol>
-                                    <VFileInput
-                                        v-bind="mediaProps"
-                                        v-model="media"
-                                        label="Media (image or audio)"
-                                    >
-                                        <template
-                                            v-if="media"
-                                            #append
-                                        >
-                                            <VBtn
-                                                v-if="mediaType === 'audio'"
-                                                variant="text"
-                                                icon="mdi-volume-high"
-                                                @click="playSound"
-                                            />
-                                            <VBtn
-                                                v-if="mediaType === 'image'"
-                                                :icon="true"
-                                                @click="showPreview = true"
-                                            >
-                                                <VAvatar :image="imgPreview" />
-                                            </VBtn>
-                                        </template>
-                                    </VFileInput>
-                                </VCol>
-                            </VRow>
-                            <VRow>
-                                <VCol>
-                                    <Wysiwyg
-                                        v-model="note"
-                                        label="Notes"
-                                        :error="errors.notes"
-                                    />
-                                </VCol>
-                            </VRow>
-                            <VRow>
-                                <VCol>
-                                    <Wysiwyg
-                                        v-model="answer"
-                                        label="Answer"
-                                        :error="errors.answer"
-                                    />
-                                </VCol>
-                            </VRow>
-                            <VRow>
-                                <VCol>
-                                    <VCombobox
-                                        v-bind="tagsProps"
-                                        v-model="tags"
-                                        :chips="true"
-                                        item-value=""
-                                        :return-object="false"
-                                        :multiple="true"
-                                        :closable-chips="true"
-                                        :items="tagsList"
-                                        label="Tags"
-                                        hint="You can add non existing tags and press enter"
-                                    />
-                                </VCol>
-                            </VRow>
+                                <VCard
+                                    :variant="qType === 'classic' ? 'tonal' : 'outlined'"
+                                    prepend-icon="mdi-text-box"
+                                    title="Classic"
+                                    @click="toggle"
+                                />
+                            </VItem>
+                        </VCol>
+                        <VCol>
+                            <VItem
+                                v-slot="{ toggle }"
+                                value="media"
+                            >
+                                <VCard
+                                    :variant="qType === 'media' ? 'tonal' : 'outlined'"
+                                    prepend-icon="mdi-music-box-outline"
+                                    title="Media"
+                                    @click="toggle"
+                                />
+                            </VItem>
                         </VCol>
                     </VRow>
-                </VContainer>
-                <VDialog
-                    v-model="showPreview"
-                >
-                    <VImg :image="imgPreview" />
-                </VDialog>
-            </template>
-            <template #actions>
-                <VSpacer />
-                <VBtn
-                    @click="valueData = false"
-                >
-                    Cancel
-                </VBtn>
-                <VBtn
-                    color="primary"
-                    :disabled="!formValid"
-                    @click="submit"
-                >
-                    Save
-                </VBtn>
-            </template>
-        </VCard>
-    </VDialog>
+                </VItemGroup>
+                <VRow v-if="qType === 'classic'">
+                    <VCol>
+                        <Wysiwyg
+                            v-model="question"
+                            label="Question"
+                            placeholder="Test bjr"
+                            :error="errors.answer"
+                        />
+                    </VCol>
+                </VRow>
+                <VRow v-if="qType === 'media'">
+                    <VCol>
+                        <VFileInput
+                            v-bind="mediaProps"
+                            v-model="media"
+                            label="Media (image or audio)"
+                        >
+                            <template
+                                v-if="media"
+                                #append
+                            >
+                                <VBtn
+                                    v-if="mediaType === 'audio'"
+                                    variant="text"
+                                    icon="mdi-volume-high"
+                                    @click="playSound"
+                                />
+                                <VBtn
+                                    v-if="mediaType === 'image'"
+                                    :icon="true"
+                                    @click="showPreview = true"
+                                >
+                                    <VAvatar :image="imgPreview" />
+                                </VBtn>
+                            </template>
+                        </VFileInput>
+                    </VCol>
+                </VRow>
+                <VRow>
+                    <VCol>
+                        <Wysiwyg
+                            v-model="note"
+                            label="Notes"
+                            :error="errors.notes"
+                        />
+                    </VCol>
+                </VRow>
+                <VRow>
+                    <VCol>
+                        <Wysiwyg
+                            v-model="answer"
+                            label="Answer"
+                            :error="errors.answer"
+                        />
+                    </VCol>
+                </VRow>
+                <VRow>
+                    <VCol>
+                        <VCombobox
+                            v-bind="tagsProps"
+                            v-model="tags"
+                            :chips="true"
+                            item-value=""
+                            :return-object="false"
+                            :multiple="true"
+                            :closable-chips="true"
+                            :items="tagsList"
+                            label="Tags"
+                            hint="You can add non existing tags and press enter"
+                        />
+                    </VCol>
+                </VRow>
+            </VCol>
+        </VRow>
+    </VContainer>
 </template>
 
 <style scoped>

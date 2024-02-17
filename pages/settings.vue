@@ -225,7 +225,6 @@ async function deleteBox(box: Box) {
         <VDialog
             v-model="createBoxModal"
             :persistent="true"
-            width="500"
         >
             <VCard
                 prepend-icon="mdi-cube-outline"
@@ -269,7 +268,6 @@ async function deleteBox(box: Box) {
         </VDialog>
         <VDialog
             v-model="editBoxModal"
-            width="500"
         >
             <VCard
                 prepend-icon="mdi-cube-scan"
@@ -311,7 +309,6 @@ async function deleteBox(box: Box) {
         </VDialog>
         <VDialog
             v-model="deleteBoxModal"
-            width="500"
         >
             <VCard
                 prepend-icon="mdi-alert"
@@ -339,7 +336,6 @@ async function deleteBox(box: Box) {
         </VDialog>
         <VDialog
             v-model="orphanCardsModal"
-            width="500"
         >
             <VCard
                 prepend-icon="mdi-cancel"

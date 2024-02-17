@@ -36,7 +36,6 @@ const submit = handleSubmit(async (value) => {
 <template>
     <VDialog
         v-model="valueData"
-        width="600"
         persitent
     >
         <VCard
