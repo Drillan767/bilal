@@ -27,15 +27,12 @@ export default defineEventHandler(async (event) => {
                 payload[fieldName] = field.data.toString()
                 break
             case 'question_type':
-                console.log('question_type')
                 payload.question_type = field.data.toString() as Form['question_type']
                 break
             case 'question':
-                console.log('question')
                 payload.question = field.data?.toString() ?? null
                 break
             case 'deck_id':
-                console.log('deck_id')
                 deckId = field.data.toString()
                 break
         }
@@ -86,20 +83,24 @@ export default defineEventHandler(async (event) => {
 
     // Handle media upload.
     if (mediaData && question_type === 'media') {
-        await supabase
+        console.log(mediaData)
+
+        const { error } = await supabase
             .storage
             .from('media')
-            .upload(`${card[0].id}-${mediaData.name}`, mediaData?.data, {
+            .upload(`${card[0].id}-${mediaData.filename}`, mediaData.data, {
                 cacheControl: '3600',
                 contentType: `${mediaData.type};charset=UTF-8`,
             })
 
+        console.log({ error })
+
         await supabase
             .from('cards')
             .update({
-                media: `${process.env.SUPABASE_URL}/storage/v1/object/public/media/${card[0].id}-${mediaData.name}`,
+                media: `${process.env.SUPABASE_URL}/storage/v1/object/public/media/${card[0].id}-${mediaData.filename}`,
             })
-            .eq('id', box.id)
+            .eq('id', card[0].id)
     }
 
     // Handle tags
