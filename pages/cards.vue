@@ -59,7 +59,6 @@ function editCard() {
     <VRow />
     <VDialog
         v-model="drawer"
-        width="600"
     >
         <CardForm :edit="edit" />
     </VDialog>

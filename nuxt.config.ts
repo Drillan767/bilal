@@ -43,6 +43,9 @@ export default defineNuxtConfig({
                     variant: 'outlined',
                     color: 'primary',
                 },
+                VDialog: {
+                    width: 600,
+                },
             },
         },
     },

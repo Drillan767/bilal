@@ -3,6 +3,7 @@ import { useRouteParams } from '@vueuse/router'
 import type { Database } from '~/types/supabase'
 import type { Deck } from '~/types/models'
 import useNotification from '~/composables/notifications'
+import CreateCardDialog from '~/components/cards/CreateCardDialog.vue'
 import CardForm from '~/components/cards/CardForm.vue'
 
 const router = useRouter()
@@ -175,7 +176,6 @@ watch(showEditDeckDialog, (value) => {
     </VRow>
     <VDialog
         v-model="showEditDeckDialog"
-        width="600"
     >
         <VCard
             prepend-icon="mdi-cards"
@@ -208,7 +208,6 @@ watch(showEditDeckDialog, (value) => {
     </VDialog>
     <VDialog
         v-model="showDeleteDeckDialog"
-        width="600"
         :persistent="true"
     >
         <VCard
@@ -231,9 +230,16 @@ watch(showEditDeckDialog, (value) => {
         </VCard>
     </VDialog>
 
-    <CardForm
+    <CreateCardDialog
+        v-model="showCreateCardDialog"
+        :deck-id="deckId"
+        @success="fetchDeck"
+        @close="showCreateCardDialog = false"
+    />
+
+    <!-- <CardForm
         v-model="showCreateCardDialog"
         :deck-id="deckId"
         :edit="false"
-    />
+    /> -->
 </template>

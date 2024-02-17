@@ -6,7 +6,6 @@ import StarterKit from '@tiptap/starter-kit'
 interface Props {
     modelValue: any
     label: string
-    placeholder?: string
     error?: string
 }
 
@@ -21,7 +20,8 @@ const editor = useEditor({
     extensions: [
         StarterKit,
         Placeholder.configure({
-            placeholder: props.placeholder ?? '',
+            emptyEditorClass: 'is-empty',
+            placeholder: 'Type here...',
         }),
     ],
     onUpdate: () => {
@@ -38,64 +38,81 @@ onMounted(() => editor.value?.commands.setContent(props.modelValue))
         variant="tonal"
     >
         <VToolbar
-            :extended="true"
             :title="props.label"
         >
-            <template #extension>
+            <VBtnGroup
+                :divided="true"
+                density="compact"
+                class="mr-2"
+            >
                 <VBtn
                     :disabled="!editor.can().chain().focus().toggleBold().run()"
-                    :variant="editor.isActive('bold') ? 'tonal' : 'text'"
+                    :variant="editor.isActive('bold') ? 'tonal' : 'outlined'"
                     icon="mdi-format-bold"
-                    class="mx-2"
                     @click="editor.chain().focus().toggleBold().run()"
-                />
-                <VBtn
-                    :disabled="!editor.can().chain().focus().toggleItalic().run()"
-                    :variant="editor.isActive('italic') ? 'tonal' : 'text'"
-                    icon="mdi-format-italic"
-                    class="mr-2"
-                    @click="editor.chain().focus().toggleItalic().run()"
-                />
-                <VBtn
-                    :variant="editor.isActive('bulletList') ? 'tonal' : 'text'"
-                    icon="mdi-format-list-bulleted"
-                    class="mr-2"
-                    @click="editor.chain().focus().toggleBulletList().run()"
-                />
-                <VBtn
-                    :variant="editor.isActive('orderedList') ? 'tonal' : 'text'"
-                    icon="mdi-format-list-numbered"
-                    class="mr-2"
-                    @click="editor.chain().focus().toggleOrderedList().run()"
                 />
 
                 <VBtn
-                    :variant="editor.isActive('code') ? 'tonal' : 'text'"
+                    :disabled="!editor.can().chain().focus().toggleItalic().run()"
+                    :variant="editor.isActive('italic') ? 'tonal' : 'outlined'"
+                    icon="mdi-format-italic"
+                    @click="editor.chain().focus().toggleItalic().run()"
+                />
+            </VBtnGroup>
+            <VBtnGroup
+                :divided="true"
+                density="compact"
+                class="mr-2"
+            >
+                <VBtn
+                    :variant="editor.isActive('bulletList') ? 'tonal' : 'outlined'"
+                    icon="mdi-format-list-bulleted"
+                    @click="editor.chain().focus().toggleBulletList().run()"
+                />
+
+                <VBtn
+                    :variant="editor.isActive('orderedList') ? 'tonal' : 'outlined'"
+                    icon="mdi-format-list-numbered"
+                    @click="editor.chain().focus().toggleOrderedList().run()"
+                />
+            </VBtnGroup>
+
+            <VBtnGroup
+                :divided="true"
+                density="compact"
+                class="mr-2"
+            >
+                <VBtn
+                    :variant="editor.isActive('code') ? 'tonal' : 'outlined'"
                     icon="mdi-code-tags"
-                    class="mr-2"
                     @click="editor.chain().focus().toggleCode().run()"
                 />
 
                 <VBtn
-                    :variant="editor.isActive('codeBlock') ? 'tonal' : 'text'"
+                    :variant="editor.isActive('codeBlock') ? 'tonal' : 'outlined'"
                     icon="mdi-code-braces-box"
-                    class="mr-2"
                     @click="editor.chain().focus().toggleCodeBlock().run()"
                 />
+            </VBtnGroup>
 
+            <VBtnGroup
+                :divided="true"
+                density="compact"
+                class="mr-2"
+            >
                 <VBtn
-                    variant="text"
+                    variant="outlined"
                     icon="mdi-undo"
-                    class="mr-2"
+
                     @click="editor.chain().focus().undo().run()"
                 />
 
                 <VBtn
-                    variant="text"
+                    variant="outlined"
                     icon="mdi-redo"
                     @click="editor.chain().focus().redo().run()"
                 />
-            </template>
+            </VBtnGroup>
         </VToolbar>
         <VCardText>
             <EditorContent
@@ -111,8 +128,8 @@ onMounted(() => editor.value?.commands.setContent(props.modelValue))
 
 <style scoped lang="scss">
     :deep(.ProseMirror) {
-        min-height: 100px;
-        max-height: 100px;
+        min-height: 50px;
+        max-height: 50px;
         overflow-y: scroll;
 
         ul,
@@ -144,19 +161,13 @@ onMounted(() => editor.value?.commands.setContent(props.modelValue))
             outline: none;
         }
 
+        .is-empty::before {
+            color: #adb5bd;
+            content: attr(data-placeholder);
+            font-style: italic;
+            float: left;
+            height: 0;
+            pointer-events: none;
+        }
     }
-/*     :deep(.ProseMirror):focus {
-        outline: none;
-    }
-
-    :deep(.ProseMirror) ul,
-  ol {
-    padding: 0 1rem;
-  }
-
-    :deep(.ProseMirror) {
-        min-height: 100px;
-        max-height: 100px;
-        overflow-y: scroll;
-    } */
 </style>
