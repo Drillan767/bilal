@@ -217,6 +217,7 @@ watch(showEditDeckDialog, (value) => {
             >
                 <template #text>
                     <VDataIterator
+                        v-if="deck.cards.length > 0"
                         :items="deck.cards"
                         :search="search"
                     >
@@ -248,6 +249,24 @@ watch(showEditDeckDialog, (value) => {
                             </VContainer>
                         </template>
                     </VDataIterator>
+                    <template v-else>
+                        <VCol class="text-center">
+                            <VIcon
+                                icon="mdi-information"
+                                size="64px"
+                            />
+                            <p class="my-2">
+                                Nothing to display, yet.
+                            </p>
+                            <VBtn
+                                color="primary"
+                                prepend-icon="mdi-plus"
+                                @click="createCard"
+                            >
+                                Add a card
+                            </VBtn>
+                        </VCol>
+                    </template>
                 </template>
             </VCard>
         </VCol>
