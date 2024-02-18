@@ -4,7 +4,28 @@ import type { Database } from '~/types/supabase'
 import type { Deck } from '~/types/models'
 import useNotification from '~/composables/notifications'
 import CreateCardDialog from '~/components/cards/CreateCardDialog.vue'
-import CardForm from '~/components/cards/CardForm.vue'
+import CardDetail from '~/components/decks/CardDetail.vue'
+
+interface Card {
+    id: number,
+    question_type: 'classic' | 'media'
+    question: string | null
+    media: string | null
+    notes: string | null
+    last_answered_at: string |null
+    box: {
+        name: string
+    } | null
+    cards_tags: {
+        tags: {
+            name: string
+        } | null
+    }[] | null
+}
+
+type DeckContent = Deck & {
+    cards: Card[]
+}
 
 const router = useRouter()
 const supabase = useSupabaseClient<Database>()
@@ -12,11 +33,12 @@ const { displayError, displaySuccess } = useNotification()
 
 const deckId = useRouteParams('id', null, { transform: String })
 
-const deck = ref<Deck>({} as Deck)
+const deck = ref<DeckContent>({} as DeckContent)
 const loading = ref(false)
 const showEditDeckDialog = ref(false)
 const showDeleteDeckDialog = ref(false)
 const showCreateCardDialog = ref(false)
+const search = ref<string>()
 
 const { defineField, handleSubmit, resetForm, setValues } = useForm<{ name: string }>({
     validationSchema: {
@@ -52,7 +74,17 @@ async function fetchDeck() {
         .from('decks')
         .select(`
             id,
-            name
+            name,
+            cards(
+                id,
+                question,
+                question_type,
+                media,
+                notes,
+                last_answered_at,
+                cards_tags(tags(name)),
+                box:boxes(name)
+            )
         `)
         .eq('id', deckId.value)
         .single()
@@ -64,6 +96,8 @@ async function fetchDeck() {
         router.push('/decks')
             .then(() => displayError('Could not find the deck'))
     }
+
+    loading.value = false
 }
 
 function editDeck() {
@@ -174,6 +208,50 @@ watch(showEditDeckDialog, (value) => {
             </VRow>
         </VCol>
     </VRow>
+    <VRow>
+        <VCol>
+            <VCard
+                :loading="loading"
+                variant="tonal"
+                title="Cards"
+            >
+                <template #text>
+                    <VDataIterator
+                        :items="deck.cards"
+                        :search="search"
+                    >
+                        <template #header>
+                            <VToolbar class="px-2">
+                                <VTextField
+                                    v-model="search"
+                                    clearable
+                                    density="comfortable"
+                                    hide-details
+                                    placeholder="Search"
+                                    prepend-inner-icon="mdi-magnify"
+                                    style="max-width: 300px;"
+                                    variant="solo"
+                                />
+                            </VToolbar>
+                        </template>
+
+                        <template #default="{ items }">
+                            <VContainer :fluid="true">
+                                <VRow :dense="true">
+                                    <CardDetail
+                                        v-for="(card, i) in items"
+                                        :key="i"
+                                        :card="card.raw"
+                                        @fetch="fetchDeck"
+                                    />
+                                </VRow>
+                            </VContainer>
+                        </template>
+                    </VDataIterator>
+                </template>
+            </VCard>
+        </VCol>
+    </VRow>
     <VDialog
         v-model="showEditDeckDialog"
     >
@@ -235,10 +313,4 @@ watch(showEditDeckDialog, (value) => {
         :deck-id="deckId"
         @success="fetchDeck"
     />
-
-    <!-- <CardForm
-        v-model="showCreateCardDialog"
-        :deck-id="deckId"
-        :edit="false"
-    /> -->
 </template>

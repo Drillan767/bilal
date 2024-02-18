@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
 
     for (const field of body) {
         const fieldName = field.name!.toString()
-        switch(fieldName) {
+        switch (fieldName) {
             case 'answer':
             case 'notes':
             case 'tags':
@@ -83,8 +83,6 @@ export default defineEventHandler(async (event) => {
 
     // Handle media upload.
     if (mediaData && question_type === 'media') {
-        console.log(mediaData)
-
         const { error } = await supabase
             .storage
             .from('media')
@@ -92,8 +90,6 @@ export default defineEventHandler(async (event) => {
                 cacheControl: '3600',
                 contentType: `${mediaData.type};charset=UTF-8`,
             })
-
-        console.log({ error })
 
         await supabase
             .from('cards')
