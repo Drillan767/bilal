@@ -36,11 +36,11 @@ async function submit() {
     const formData = new FormData()
     formData.append('deck_id', props.deckId)
     formData.append('answer', form.value.answer)
-    formData.append('notes', form.value.notes)
+    formData.append('notes', form.value.notes ?? '')
     formData.append('tags', JSON.stringify(form.value.tags))
     formData.append('question_type', form.value.question_type)
 
-    if (form.value.question_type === 'classic')
+    if (form.value.question_type === 'classic' && form.value.question)
         formData.append('question', form.value.question)
 
     if (form.value.question_type === 'media' && form.value.media)

@@ -50,9 +50,9 @@ export interface Deck {
 export interface CardForm {
     deck_id: string
     question_type: 'classic' | 'media'
-    question: string
+    question: string | null
     answer: string
     tags: string[]
-    notes: string
+    notes: string | null
     media: File[] | undefined
 }

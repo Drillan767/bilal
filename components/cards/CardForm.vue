@@ -27,7 +27,7 @@ const formProxy = computed({
     set: value => emit('update:form', value),
 })
 
-const { defineField, controlledValues, errors } = useForm<CardForm>({
+const { defineField, controlledValues, errors, setValues } = useForm<CardForm>({
     validationSchema: computed(() => toTypedSchema(
         yup.object({
             question_type: yup.string().required(),
@@ -132,6 +132,8 @@ watch([controlledValues, qType], ([values, type]) => emit('update:form', {
     ...values,
     question_type: type,
 }))
+
+watch(() => props.form, value => setValues(value))
 
 onMounted(() => fetchTags())
 </script>

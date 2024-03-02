@@ -7,12 +7,13 @@ import CreateCardDialog from '~/components/cards/CreateCardDialog.vue'
 import CardDetail from '~/components/decks/CardDetail.vue'
 
 interface Card {
-    id: number,
+    id: number
     question_type: 'classic' | 'media'
     question: string | null
     media: string | null
     notes: string | null
-    last_answered_at: string |null
+    answer: string
+    last_answered_at: string | null
     box: {
         name: string
     } | null
@@ -81,6 +82,7 @@ async function fetchDeck() {
                 question_type,
                 media,
                 notes,
+                answer,
                 last_answered_at,
                 cards_tags(tags(name)),
                 box:boxes(name)
@@ -123,9 +125,9 @@ const updateDeck = handleSubmit(async (form) => {
 
     showEditDeckDialog.value = false
     resetForm()
-    fetchDeck()
-
     loading.value = false
+
+    await fetchDeck()
 })
 
 async function deleteDeck() {
@@ -149,6 +151,8 @@ watch(showEditDeckDialog, (value) => {
     if (!value)
         resetForm()
 })
+
+provide('deckId', deckId.value)
 </script>
 
 <template>
@@ -217,7 +221,7 @@ watch(showEditDeckDialog, (value) => {
             >
                 <template #text>
                     <VDataIterator
-                        v-if="deck.cards.length > 0"
+                        v-if="deck.cards?.length > 0"
                         :items="deck.cards"
                         :search="search"
                     >
@@ -236,11 +240,11 @@ watch(showEditDeckDialog, (value) => {
                             </VToolbar>
                         </template>
 
-                        <template #default="{ items }">
+                        <template #default="{ items: cardList }">
                             <VContainer :fluid="true">
                                 <VRow :dense="true">
                                     <CardDetail
-                                        v-for="(card, i) in items"
+                                        v-for="(card, i) in cardList"
                                         :key="i"
                                         :card="card.raw"
                                         @fetch="fetchDeck"

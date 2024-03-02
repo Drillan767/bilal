@@ -1,4 +1,5 @@
 import * as process from 'node:process'
+import handleTagsSync from '../handleTagSync'
 import type { Database } from '~/types/supabase'
 import type { CardForm } from '~/types/models'
 import { serverSupabaseClient } from '#supabase/server'
@@ -57,12 +58,6 @@ export default defineEventHandler(async (event) => {
 
     const formTags: string[] = JSON.parse(tags)
 
-    // Check which tags already exist
-    const { data: storedTags } = await supabase
-        .from('tags')
-        .select('id, name')
-        .in('name', JSON.parse(tags))
-
     // Store card.
     const { data: card, error } = await supabase
         .from('cards')
@@ -83,7 +78,7 @@ export default defineEventHandler(async (event) => {
 
     // Handle media upload.
     if (mediaData && question_type === 'media') {
-        const { error } = await supabase
+        await supabase
             .storage
             .from('media')
             .upload(`${card[0].id}-${mediaData.filename}`, mediaData.data, {
@@ -99,27 +94,7 @@ export default defineEventHandler(async (event) => {
             .eq('id', card[0].id)
     }
 
-    // Handle tags
-    const newTags = formTags.filter((t) => {
-        if (storedTags !== null)
-            return !storedTags.some(storedTag => storedTag.name === t)
-
-        return true
-    })
-
-    if (newTags.length) {
-        const { data: tId, error } = await supabase
-            .from('tags')
-            .insert(newTags.map(t => ({ name: t, deck_id: deckId })))
-            .select('id')
-
-        if (!tId)
-            throw createError({ statusCode: 400, message: error.message })
-
-        await supabase
-            .from('cards_tags')
-            .insert(tId.map(t => ({ card_id: card[0].id, tag_id: t.id })))
-    }
+    await handleTagsSync(supabase, deckId, card[0].id, formTags)
 
     return payload
 })
