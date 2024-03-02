@@ -18,7 +18,7 @@ interface Props {
             tags: {
                 name: string
             } | null
-        }[] | null
+        }[]
     }
 }
 

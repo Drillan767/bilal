@@ -21,7 +21,7 @@ interface Card {
         tags: {
             name: string
         } | null
-    }[] | null
+    }[]
 }
 
 type DeckContent = Deck & {
@@ -89,6 +89,8 @@ async function fetchDeck() {
             )
         `)
         .eq('id', deckId.value)
+        .not('cards.box', 'is', 'NULL')
+        .not('cards.cards_tags.tags', 'is', 'NULL')
         .single()
 
     if (data)

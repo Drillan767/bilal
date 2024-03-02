@@ -77,6 +77,7 @@ watch(valueData, () => resetForm())
                     v-model:form="form"
                     v-model:formValid="formValid"
                     :loading="loading"
+                    :edit="false"
                 />
             </template>
             <template #actions>

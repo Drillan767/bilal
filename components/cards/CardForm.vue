@@ -9,6 +9,7 @@ import { vuetifyConfig } from '~/composables/vuetifyConfig'
 interface Props {
     form: CardForm
     formValid: boolean
+    edit: boolean
 }
 
 const props = defineProps<Props>()
@@ -156,6 +157,7 @@ onMounted(() => fetchTags())
                                     :variant="qType === 'classic' ? 'tonal' : 'outlined'"
                                     prepend-icon="mdi-text-box"
                                     title="Classic"
+                                    :disabled="edit"
                                     @click="toggle"
                                 />
                             </VItem>
@@ -169,6 +171,7 @@ onMounted(() => fetchTags())
                                     :variant="qType === 'media' ? 'tonal' : 'outlined'"
                                     prepend-icon="mdi-music-box-outline"
                                     title="Media"
+                                    :disabled="edit"
                                     @click="toggle"
                                 />
                             </VItem>

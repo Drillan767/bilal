@@ -17,7 +17,7 @@ interface Card {
         tags: {
             name: string
         } | null
-    }[] | null
+    }[]
 }
 
 interface Props {
@@ -41,13 +41,21 @@ const form = ref<FormType>({} as FormType)
 // Handle preview from media link, check how to update it.
 
 function intializeForm() {
+    const retrievedTags = props.card.cards_tags.reduce((acc, ct) => {
+        if (!ct.tags)
+            return acc
+        acc.push(ct.tags.name)
+
+        return acc
+    }, [] as string[])
+
     form.value = {
         question_type: props.card.question_type,
         question: props.card.question_type === 'classic' && props.card.question ? props.card.question : null,
         deck_id: deckId,
         notes: props.card.notes ?? null,
         answer: props.card.answer,
-        tags: ['coucou', 'les', 'copains'],
+        tags: retrievedTags,
         media: undefined,
     }
 }
@@ -71,10 +79,10 @@ watch(valueData, (value) => {
             title="Edit card"
         >
             <template #text>
-                <p>Deck id : {{ deckId }}</p>
                 <CardForm
                     v-model:form="form"
                     v-model:formValid="formValid"
+                    :edit="true"
                     :loading="loading"
                 />
             </template>
